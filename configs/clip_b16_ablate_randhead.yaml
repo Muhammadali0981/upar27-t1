@@ -1,0 +1,3 @@
+name: clip_b16_ablate_randhead
+base: clip_b16.yaml
+text_init: null

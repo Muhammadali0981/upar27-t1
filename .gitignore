@@ -1,0 +1,9 @@
+.venv/
+cache/
+starter_kit/
+results/*/*.pt
+results/*/*.npz
+submission/assets/model.pt
+dist/
+__pycache__/
+*.log

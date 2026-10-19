@@ -1,0 +1,17 @@
+name: convnext_t
+model: convnext_t
+h: 256
+w: 128
+epochs: 10
+batch_size: 64
+lr: 2.0e-4
+head_lr: 2.0e-3
+wd: 0.05
+warmup_epochs: 1
+ema_decay: 0.999
+balanced: true
+degrade: true
+degrade_p: 0.3
+weighted_loss: true
+dropout: 0.2
+num_workers: 8

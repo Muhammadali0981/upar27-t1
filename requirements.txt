@@ -1,0 +1,13 @@
+# local training env (Python 3.11). Install torch first:
+#   pip install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
+torch==2.4.1
+torchvision==0.19.1
+open_clip_torch
+numpy
+pillow
+pandas
+pyyaml
+tqdm
+matplotlib
+pytest
+gdown==5.2.0   # starter-kit download script passes fuzzy=, removed in gdown 6
