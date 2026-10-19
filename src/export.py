@@ -77,6 +77,9 @@ def export(run, ckpt="best.pt", calib_file="calib.json", flip=True, out_dir=None
         json.dump(meta, fh, indent=1)
     shutil.copy(os.path.join(ROOT, "starter_kit", "examples", "task1", "sample_code_submission", "metadata.yaml"),
                 os.path.join(out_dir, "metadata.yaml"))
+    run_src = os.path.join(ROOT, "submission", "run.py")
+    if os.path.abspath(out_dir) != os.path.dirname(run_src):
+        shutil.copy(run_src, os.path.join(out_dir, "run.py"))
     print("exported to", out_dir)
     return out_dir
 

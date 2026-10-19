@@ -93,12 +93,16 @@ class CachedPAR(Dataset):
         return img, torch.from_numpy(self.labels[i].astype(np.float32)), int(self.source_idx[i])
 
 
-def balanced_sampler(source_idx: np.ndarray, num_samples: int | None = None, seed: int = 0):
-    """Each source dataset gets an equal share of the samples per epoch (N2)."""
+def balanced_sampler(source_idx: np.ndarray, num_samples: int | None = None, seed: int = 0, alpha: float = 0.0):
+    """Source dataset s gets a share of each epoch proportional to n_s**alpha (N2).
+    alpha=0: equal share per dataset; alpha=0.5: sqrt-balanced; alpha=1: natural sampling."""
     counts = np.bincount(source_idx, minlength=len(SOURCES)).astype(np.float64)
     present = counts > 0
+    share = np.zeros_like(counts)
+    share[present] = counts[present] ** alpha
+    share /= share.sum()
     w = np.zeros_like(counts)
-    w[present] = 1.0 / (counts[present] * present.sum())
+    w[present] = share[present] / counts[present]
     weights = torch.as_tensor(w[source_idx], dtype=torch.double)
     g = torch.Generator().manual_seed(seed)
     return WeightedRandomSampler(weights, num_samples or len(source_idx), replacement=True, generator=g)

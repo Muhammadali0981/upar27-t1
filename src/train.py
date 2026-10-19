@@ -33,7 +33,7 @@ DEFAULTS = dict(
     lr=2e-4, head_lr=2e-3, wd=0.05, layer_decay=0.7, warmup_epochs=1.0, ema_decay=0.999,
     balanced=True, degrade=True, degrade_p=0.3, weighted_loss=True, label_smoothing=0.0,
     train_splits=["train"], num_workers=8, seed=0, text_init=None, grad_ckpt=False,
-    max_steps=0, eval_raw=True, dropout=0.2, init_scale=1 / 0.07, epoch_fraction=1.0,
+    max_steps=0, eval_raw=True, dropout=0.2, init_scale=1 / 0.07, epoch_fraction=1.0, balance_alpha=0.0,
 )
 
 
@@ -51,10 +51,14 @@ def git_hash():
         return "no-git"
 
 
-def effective_pos_rate(labels, source_idx, balanced):
+def effective_pos_rate(labels, source_idx, balanced, alpha=0.0):
+    """Positive rate under the sampling distribution (source share proportional to n_s**alpha)."""
     if not balanced:
         return labels.mean(0).astype(np.float64)
-    return np.mean([labels[source_idx == s].mean(0) for s in np.unique(source_idx)], axis=0)
+    srcs = np.unique(source_idx)
+    share = np.array([(source_idx == s).sum() ** alpha for s in srcs], dtype=np.float64)
+    share /= share.sum()
+    return np.sum([w * labels[source_idx == s].mean(0) for w, s in zip(share, srcs)], axis=0)
 
 
 def make_model(cfg, pos_rate=None, load_pretrained=True):
@@ -138,9 +142,9 @@ def main():
 
     train_ds = CachedPAR(cfg["train_splits"], cfg["h"], cfg["w"], TrainAugment(cfg["degrade"], cfg["degrade_p"]))
     has_val = "val" not in cfg["train_splits"]
-    pos_rate = effective_pos_rate(train_ds.labels, train_ds.source_idx, cfg["balanced"])
+    pos_rate = effective_pos_rate(train_ds.labels, train_ds.source_idx, cfg["balanced"], cfg["balance_alpha"])
     n_epoch = int(len(train_ds) * cfg["epoch_fraction"])
-    sampler = balanced_sampler(train_ds.source_idx, n_epoch, cfg["seed"]) if cfg["balanced"] else \
+    sampler = balanced_sampler(train_ds.source_idx, n_epoch, cfg["seed"], cfg["balance_alpha"]) if cfg["balanced"] else \
         torch.utils.data.RandomSampler(train_ds, num_samples=n_epoch)
     nw = cfg["num_workers"]
     train_dl = DataLoader(train_ds, cfg["batch_size"], sampler=sampler, num_workers=nw, pin_memory=True,

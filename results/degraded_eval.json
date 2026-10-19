@@ -1,0 +1,22 @@
+{
+ "scale": 0.4,
+ "quality": 40,
+ "results": {
+  "clip_b16_short": {
+   "raw": 0.8489609549924938,
+   "calibrated": 0.8665388755603556
+  },
+  "clip_b16_short_nodegrade": {
+   "raw": 0.8405069448518635,
+   "calibrated": 0.8604613735059748
+  },
+  "convnext_t": {
+   "raw": 0.8412635650947737,
+   "calibrated": 0.853372542929805
+  },
+  "clip_b16": {
+   "raw": 0.8530144267103038,
+   "calibrated": 0.8685513268388133
+  }
+ }
+}

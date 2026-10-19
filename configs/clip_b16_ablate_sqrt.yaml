@@ -1,0 +1,4 @@
+# N2 variant: sqrt-balanced sampling, source share ~ sqrt(n) (short schedule)
+name: clip_b16_short_sqrt
+base: clip_b16_short.yaml
+balance_alpha: 0.5
