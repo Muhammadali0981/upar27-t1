@@ -16,7 +16,8 @@ import torch
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BATCH_SIZE = 256
+BATCH_SIZE = 512
+_CHUNK = 64
 
 _MODEL = None
 _CFG: dict = {}
@@ -34,7 +35,7 @@ def load_model() -> None:
         model = model.float()  # fp16 weights are meant for the GPU
     _MODEL = model.eval()
     with torch.inference_mode():  # warm-up (cudnn autotune, lazy init)
-        for b in (BATCH_SIZE, 1):
+        for b in (_CHUNK, 1):
             _MODEL(torch.zeros((b, _CFG["h"], _CFG["w"], 3), dtype=torch.uint8, device=_DEVICE))
     if _DEVICE.type == "cuda":
         torch.cuda.synchronize()
@@ -58,10 +59,15 @@ def _order(names: list) -> list:
 def predict_batch(samples: list) -> list:
     if _MODEL is None:
         load_model()
-    imgs = list(_POOL.map(_load, [s["image_path"] for s in samples]))
-    x = torch.from_numpy(np.stack(imgs)).to(_DEVICE, non_blocking=True)
+    # decode all images in parallel; run the model chunk by chunk as soon as each chunk is
+    # decoded, so CPU decoding and GPU compute overlap (GPU calls are asynchronous)
+    futures = [_POOL.submit(_load, s["image_path"]) for s in samples]
+    outs = []
     with torch.inference_mode():
-        p = _MODEL(x).float().cpu().numpy()
+        for c in range(0, len(futures), _CHUNK):
+            x = np.stack([f.result() for f in futures[c:c + _CHUNK]])
+            outs.append(_MODEL(torch.from_numpy(x).to(_DEVICE, non_blocking=True)).float())
+        p = torch.cat(outs).cpu().numpy()
     p = np.nan_to_num(p, nan=0.0, posinf=1.0, neginf=0.0).clip(0.0, 1.0)
     out, cache = [], {}
     for s, row in zip(samples, p):
