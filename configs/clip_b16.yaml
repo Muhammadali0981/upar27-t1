@@ -4,7 +4,7 @@ arch: ViT-B-16
 pretrained: openai
 h: 256
 w: 128
-epochs: 8
+epochs: 6
 batch_size: 64
 lr: 3.0e-5
 head_lr: 1.0e-3

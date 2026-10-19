@@ -1,0 +1,6 @@
+# short-schedule (2 epoch) reference for ablations
+name: clip_b16_short
+base: clip_b16.yaml
+epochs: 2
+warmup_epochs: 0.5
+eval_raw: false

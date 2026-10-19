@@ -21,7 +21,7 @@ BATCH_SIZE = 256
 _MODEL = None
 _CFG: dict = {}
 _DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-_POOL = ThreadPoolExecutor(max_workers=16)
+_POOL = ThreadPoolExecutor(max_workers=max(4, min(16, os.cpu_count() or 8)))
 
 
 def load_model() -> None:
@@ -63,10 +63,12 @@ def predict_batch(samples: list) -> list:
     with torch.inference_mode():
         p = _MODEL(x).float().cpu().numpy()
     p = np.nan_to_num(p, nan=0.0, posinf=1.0, neginf=0.0).clip(0.0, 1.0)
-    out = []
+    out, cache = [], {}
     for s, row in zip(samples, p):
-        idx = _order(list(s["attribute_names"]))
-        out.append([float(row[i]) for i in idx])
+        key = tuple(s["attribute_names"])
+        if key not in cache:
+            cache[key] = _order(list(key))
+        out.append([float(row[i]) for i in cache[key]])
     return out
 
 

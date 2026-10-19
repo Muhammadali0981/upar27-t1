@@ -1,3 +1,4 @@
-name: clip_b16_ablate_natural
-base: clip_b16.yaml
+# N2 ablation: natural sampling (short schedule)
+name: clip_b16_short_natural
+base: clip_b16_short.yaml
 balanced: false

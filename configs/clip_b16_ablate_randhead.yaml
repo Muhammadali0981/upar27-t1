@@ -1,3 +1,4 @@
-name: clip_b16_ablate_randhead
-base: clip_b16.yaml
+# N1 ablation: random-init head (short schedule)
+name: clip_b16_short_randhead
+base: clip_b16_short.yaml
 text_init: null

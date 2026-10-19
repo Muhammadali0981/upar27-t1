@@ -1,0 +1,4 @@
+# N3 ablation: no degradation augmentation (short schedule)
+name: clip_b16_short_nodegrade
+base: clip_b16_short.yaml
+degrade: false

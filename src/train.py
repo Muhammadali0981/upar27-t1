@@ -114,13 +114,14 @@ def main():
     ap.add_argument("--config", required=True)
     ap.add_argument("--set", nargs="*", default=[], help="override, e.g. epochs=3 balanced=false")
     a = ap.parse_args()
-    cfg = dict(DEFAULTS)
-    with open(a.config) as fh:
-        user = yaml.safe_load(fh)
-    if "base" in user:  # ablation configs inherit from a base config in the same folder
-        with open(os.path.join(os.path.dirname(a.config), user.pop("base"))) as fh:
-            cfg.update(yaml.safe_load(fh))
-    cfg.update(user)
+    def load_cfg(path):  # configs may inherit (recursively) from a base config in the same folder
+        with open(path) as fh:
+            c = yaml.safe_load(fh)
+        if "base" in c:
+            return {**load_cfg(os.path.join(os.path.dirname(path), c.pop("base"))), **c}
+        return c
+
+    cfg = {**DEFAULTS, **load_cfg(a.config)}
     for kv in a.set:
         k, v = kv.split("=", 1)
         cfg[k] = yaml.safe_load(v)
