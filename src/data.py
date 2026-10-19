@@ -5,8 +5,11 @@ import os
 
 import numpy as np
 import pandas as pd
-import torch
-from torch.utils.data import Dataset, WeightedRandomSampler
+try:
+    import torch
+    from torch.utils.data import Dataset, WeightedRandomSampler
+except ImportError:  # tools/preprocess_cache.py only needs read_gt
+    torch, Dataset = None, object
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_DIR = os.path.join(ROOT, "starter_kit", "data")
@@ -84,7 +87,7 @@ class CachedPAR(Dataset):
 
     def __getitem__(self, i):
         split, j = self.items[i]
-        img = torch.from_numpy(np.ascontiguousarray(self._maps()[split][j])).permute(2, 0, 1)
+        img = torch.from_numpy(np.array(self._maps()[split][j])).permute(2, 0, 1)
         if self.transform is not None:
             img = self.transform(img)
         return img, torch.from_numpy(self.labels[i].astype(np.float32)), int(self.source_idx[i])

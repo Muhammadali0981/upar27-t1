@@ -161,6 +161,8 @@ def main():
     z, y, src = d["logits"], d["labels"], d["sources"].astype(str)
     cands = {k: v for k, v in GROUPS.items() if not (a.no_hair and k == "hair")}
     calib = calibrate(z, y, src, decode_candidates=cands)
+    calib["flip"] = "flip" in a.logits  # export checks this matches its TTA setting
+    calib["logits_file"] = a.logits
     calib["held_out"] = honest_eval(z, y, src)
     res = report(z, y, src, calib)
     calib["report"] = {k: {s: {m: v for m, v in r[s].items() if m != "mA_per_attr"} for s in r} for k, r in res.items()}

@@ -160,7 +160,7 @@ def main():
     for g in groups:
         g["base_lr"] = g["lr"]
     opt = torch.optim.AdamW(groups, betas=(0.9, 0.999))
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.amp.GradScaler("cuda")
     crit = WeightedBCE(pos_rate, cfg["weighted_loss"], cfg["label_smoothing"]).cuda()
     steps_per_epoch = len(train_dl) // cfg["accum"]
     total = steps_per_epoch * cfg["epochs"]

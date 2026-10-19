@@ -22,8 +22,8 @@ EPS = 1e-3
 
 def apply_group(p: torch.Tensor, idx: list[int], cap_margin: float | None = None) -> torch.Tensor:
     sub = p[:, idx]
-    mx, arg = sub.max(1, keepdim=True)
-    is_max = torch.zeros_like(sub, dtype=torch.bool).scatter_(1, arg, True)
+    mx = sub.max(1, keepdim=True)[0]
+    is_max = sub >= mx  # arg-max mask (exact float ties are negligible)
     need = (mx <= 0.5) & is_max
     sub = torch.where(need, sub.clamp(min=0.5 + EPS), sub)
     if cap_margin is not None:

@@ -39,8 +39,8 @@ class InferenceModule(nn.Module):
         p = torch.sigmoid(z + self.offsets.float())
         for idx in self.groups:
             sub = p[:, idx]
-            mx, arg = sub.max(1, keepdim=True)
-            is_max = torch.zeros_like(sub, dtype=torch.bool).scatter_(1, arg, True)
+            mx = sub.max(1, keepdim=True)[0]
+            is_max = sub >= mx  # arg-max mask (exact float ties are negligible)
             sub = torch.where((mx <= 0.5) & is_max, sub.clamp(min=0.5 + EPS), sub)
             p = torch.cat([p[:, :idx[0]], sub, p[:, idx[-1] + 1:]], 1)  # groups are contiguous
         return p

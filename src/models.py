@@ -100,7 +100,9 @@ class CLIPPAR(nn.Module):
                  text_weights=None, head_bias=None, init_scale=1 / 0.07, load_pretrained=True):
         super().__init__()
         import open_clip
-        model = open_clip.create_model(arch, pretrained=pretrained if load_pretrained else None)
+        # OpenAI CLIP weights were trained with QuickGELU; the plain "ViT-B-16" config uses GELU
+        model = open_clip.create_model(arch, pretrained=pretrained if load_pretrained else None,
+                                       force_quick_gelu=(pretrained == "openai"))
         self.visual = model.visual
         resize_clip_pos_embed(self.visual, h, w)
         self.norm = Normalize(CLIP_MEAN, CLIP_STD)

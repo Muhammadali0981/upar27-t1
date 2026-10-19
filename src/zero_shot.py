@@ -47,7 +47,7 @@ def main(h=256, w=128, n_train=8000, scale=1 / 0.07):
     import open_clip
     out_dir = os.path.join(ROOT, "results", "zeroshot")
     os.makedirs(out_dir, exist_ok=True)
-    model = open_clip.create_model("ViT-B-16", pretrained="openai").cuda().eval()
+    model = open_clip.create_model("ViT-B-16", pretrained="openai", force_quick_gelu=True).cuda().eval()
     tok = open_clip.get_tokenizer("ViT-B-16")
     tpos, tneg = text_embeddings(model, tok, POS), text_embeddings(model, tok, NEG)
     resize_clip_pos_embed(model.visual, h, w)
