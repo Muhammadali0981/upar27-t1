@@ -10,7 +10,7 @@ ema_decay: 0.999
 epoch_fraction: 1.0
 epochs: 3
 eval_raw: false
-git: d36f854c724bdd6435279a5d0b587cd82ffda86f
+git: aef627009b1aeefe108e46cacdc59d93bf0cfc68
 grad_ckpt: false
 h: 256
 head_lr: 0.001

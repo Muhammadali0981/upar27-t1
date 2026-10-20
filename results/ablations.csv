@@ -1,6 +1,9 @@
 run,best_epoch,weights,Market1501_CA,PA100k_CA,PETA_CA,mean_CA,mean_mA,mean_F1,heldout_raw,heldout_N4,heldout_N4N5,tta_flip,groups,model,epochs,balanced,degrade,text_init,epoch_fraction
 convnext_t,4,ema,0.8127,0.8308,0.8896,0.8444,0.8088,0.8838,0.845,0.8568,0.8569,True,age+ub_color,convnext_t,10,True,True,,1.0
 clip_b16,2,ema,0.8244,0.8537,0.8942,0.8574,0.8232,0.8953,0.8575,0.8735,0.8742,False,ub_color+lb_color,clip,6,True,True,results/zeroshot/text_weights.npz,1.0
+clip_b16_e3,1,ema,0.8259,0.8495,0.8898,0.8551,0.8208,0.893,0.8543,0.8707,0.871,False,ub_color+lb_color,clip,3,True,True,results/zeroshot/text_weights.npz,1.0
 clip_b16_short,1,ema,0.8273,0.8497,0.8864,0.8545,0.8208,0.8916,0.854,0.8708,0.8709,False,ub_color+lb_color,clip,2,True,True,results/zeroshot/text_weights.npz,1.0
 clip_b16_short_randhead,1,ema,0.8261,0.8454,0.8873,0.853,0.8191,0.8904,0.8524,0.8673,0.8675,False,age+ub_color+lb_color,clip,2,True,True,,1.0
 clip_b16_short_natural,1,ema,0.8372,0.8629,0.8603,0.8534,0.8239,0.8858,0.8531,0.8665,0.8665,False,,clip,2,False,True,results/zeroshot/text_weights.npz,1.0
+clip_b16_short_sqrt,1,ema,0.833,0.8552,0.878,0.8554,0.8238,0.8901,0.855,0.8692,0.8694,False,ub_color+lb_color,clip,2,True,True,results/zeroshot/text_weights.npz,1.0
+clip_b16_short_nodegrade,1,ema,0.8278,0.8516,0.8866,0.8553,0.8219,0.8922,0.8549,0.8715,0.8717,False,ub_color+lb_color,clip,2,True,False,results/zeroshot/text_weights.npz,1.0
