@@ -1,0 +1,7 @@
+# Model B recipe with a 3-epoch cosine schedule (the 6-epoch run peaked at epoch 3).
+# Train-only, so it is validated and its calib.json is reused by the train+val model.
+name: clip_b16_e3
+base: clip_b16.yaml
+epochs: 3
+warmup_epochs: 0.5
+eval_raw: false

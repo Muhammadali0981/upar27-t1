@@ -12,8 +12,8 @@ except ImportError:  # tools/preprocess_cache.py only needs read_gt
     torch, Dataset = None, object
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATA_DIR = os.path.join(ROOT, "starter_kit", "data")
-CACHE_DIR = os.path.join(ROOT, "cache")
+DATA_DIR = os.path.join(ROOT, "data", "raw")  # Market1501/ PA100k/ PETA/ annotations/ from the starter kit
+CACHE_DIR = os.path.join(ROOT, "data", "cache")
 SOURCES = ["Market1501", "PA100k", "PETA"]
 
 ATTRIBUTES = [

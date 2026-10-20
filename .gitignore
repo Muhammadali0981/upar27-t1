@@ -1,10 +1,20 @@
+# environment
 .venv/
-cache/
+__pycache__/
+
+# datasets: raw images (data/raw), 256x128 memmaps (data/cache), simulator input (data/sim_input)
+data/
+# organizers' starter kit clone (only used for its download script and sample submission)
 starter_kit/
+
+# large training outputs (configs, metrics, logs and calib.json in results/<run>/ are tracked)
 results/*/*.pt
 results/*/*.npz
+
+# exported package weights and the zips to upload
 submission/assets/model.pt
-dist/
-__pycache__/
+upload/
+
+# logs
+logs/
 *.log
-results_*.log

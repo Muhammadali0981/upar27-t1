@@ -1,6 +1,6 @@
 """Zip the CONTENTS of a submission folder (run.py + metadata.yaml at the zip root, assets/ inside).
 
-Usage: python tools/package.py --src submission --out dist/<name>.zip
+Usage: python tools/package.py --src submission --out upload/<name>.zip
 """
 import argparse
 import filecmp

@@ -7,6 +7,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from data import CACHE_DIR, DATA_DIR, cache_path, read_gt  # noqa: E402
@@ -33,10 +34,9 @@ def main():
         mm = np.memmap(tmp, dtype=np.uint8, mode="w+", shape=(len(paths), a.h, a.w, 3))
         t0 = time.time()
         with ProcessPoolExecutor(a.workers) as ex:
-            for i, arr in enumerate(ex.map(load, [(p, a.h, a.w) for p in paths], chunksize=256)):
+            jobs = ex.map(load, [(p, a.h, a.w) for p in paths], chunksize=256)
+            for i, arr in enumerate(tqdm(jobs, total=len(paths), desc=split, unit="img", dynamic_ncols=True)):
                 mm[i] = arr
-                if i % 10000 == 0:
-                    print(f"{split} {i}/{len(paths)} {time.time() - t0:.0f}s", flush=True)
         mm.flush()
         del mm
         os.replace(tmp, out)

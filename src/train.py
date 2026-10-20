@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import yaml
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
 from augment import TrainAugment  # noqa: E402
@@ -35,6 +36,24 @@ DEFAULTS = dict(
     train_splits=["train"], num_workers=8, seed=0, text_init=None, grad_ckpt=False,
     max_steps=0, eval_raw=True, dropout=0.2, init_scale=1 / 0.07, epoch_fraction=1.0, balance_alpha=0.0,
 )
+# progress bars refresh every 0.5 s in a terminal, every 30 s when output goes to a log file
+BAR_INTERVAL = 0.5 if sys.stderr.isatty() else 30
+
+
+class _Tee:
+    def __init__(self, stream, path):
+        self.stream, self.fh = stream, open(path, "a", encoding="utf-8")
+
+    def write(self, s):
+        self.stream.write(s)
+        self.fh.write(s)
+        self.fh.flush()
+
+    def flush(self):
+        self.stream.flush()
+
+    def isatty(self):
+        return self.stream.isatty()
 
 
 def seed_all(s):
@@ -98,10 +117,10 @@ class EMA:
 
 
 @torch.no_grad()
-def predict_logits(model, loader, flip=False, channels_last=False):
+def predict_logits(model, loader, flip=False, channels_last=False, desc="predict"):
     model.eval()
     out = []
-    for x, _, _ in loader:
+    for x, _, _ in tqdm(loader, desc=desc, leave=False, dynamic_ncols=True, mininterval=BAR_INTERVAL):
         x = x.cuda(non_blocking=True).float()
         if channels_last:
             x = x.contiguous(memory_format=torch.channels_last)
@@ -137,6 +156,8 @@ def main():
     run = os.path.join(ROOT, "results", cfg["name"])
     os.makedirs(run, exist_ok=True)
     cfg["git"] = git_hash()
+    # printed results also go to results/<name>/train.log (the progress bar is on stderr and stays in the terminal)
+    sys.stdout = _Tee(sys.stdout, os.path.join(run, "train.log"))
     with open(os.path.join(run, "config.yaml"), "w") as fh:
         yaml.safe_dump(cfg, fh)
 
@@ -184,11 +205,16 @@ def main():
     best = -1.0
     step = 0
     t_start = time.time()
+    # one bar over every training batch of the run: its ETA is the remaining training time (val passes excluded)
+    bar = tqdm(total=len(train_dl) * cfg["epochs"], desc=cfg["name"], unit="it", dynamic_ncols=True,
+               mininterval=BAR_INTERVAL, smoothing=0.05)
+    log = bar.write
     for epoch in range(cfg["epochs"]):
         model.train()
         t0 = time.time()
         run_loss, n = 0.0, 0
         opt.zero_grad(set_to_none=True)
+        bar.set_description(f"{cfg['name']} ep {epoch + 1}/{cfg['epochs']}")
         for i, (x, y, _) in enumerate(train_dl):
             x = x.cuda(non_blocking=True).float()
             if channels_last:
@@ -209,10 +235,11 @@ def main():
                 step += 1
             run_loss += loss.item() * cfg["accum"]
             n += 1
-            if i % 200 == 0:
+            bar.update(1)
+            if i % 20 == 0:
                 el = time.time() - t0
-                print(f"  ep {epoch} it {i}/{len(train_dl)} loss {run_loss / n:.4f} "
-                      f"{(i + 1) * cfg['batch_size'] / max(el, 1e-6):.0f} img/s  {el:.0f}s", flush=True)
+                bar.set_postfix(loss=f"{run_loss / n:.4f}",
+                                img_s=f"{(i + 1) * cfg['batch_size'] / max(el, 1e-6):.0f}", refresh=False)
             if cfg["max_steps"] and step >= cfg["max_steps"]:
                 break
         ep_time = time.time() - t0
@@ -222,9 +249,9 @@ def main():
             cands["raw"] = model
         if has_val:
             for tag, m in cands.items():
-                z = predict_logits(m, val_dl, channels_last=channels_last)
+                z = predict_logits(m, val_dl, channels_last=channels_last, desc=f"val {tag}")
                 res = protocol_metrics(val_ds.labels, 1 / (1 + np.exp(-z)), val_src)
-                print(format_row(f"ep{epoch} {tag}", res), flush=True)
+                log(format_row(f"ep{epoch} {tag}", res))
                 for s in SOURCES + ["mean"]:
                     row[f"{tag}_{s}_CA"] = round(res[s]["Challenge_Avg"], 5)
                     row[f"{tag}_{s}_mA"] = round(res[s]["mA"], 5)
@@ -254,16 +281,17 @@ def main():
             if new:
                 w.writeheader()
             w.writerow(row)
-        print(f"epoch {epoch} done in {ep_time / 60:.1f} min; best val CA {best:.4f}", flush=True)
+        log(f"epoch {epoch} done in {ep_time / 60:.1f} min; best val CA {best:.4f}")
         if cfg["max_steps"] and step >= cfg["max_steps"]:
             break
+    bar.close()
 
     if has_val and os.path.exists(os.path.join(run, "best.pt")):
         m, _ = load_run_model(run, "best.pt")
         m = m.cuda()
         if channels_last:
             m = m.to(memory_format=torch.channels_last)
-        z = predict_logits(m, val_dl, flip=True, channels_last=channels_last)
+        z = predict_logits(m, val_dl, flip=True, channels_last=channels_last, desc="val best +flip")
         np.savez(os.path.join(run, "val_logits_flip.npz"), logits=z, labels=val_ds.labels, sources=val_src)
         print(format_row("best +flipTTA", protocol_metrics(val_ds.labels, 1 / (1 + np.exp(-z)), val_src)), flush=True)
     print(f"done. best val CA (offsets=0, no TTA) {best:.4f}", flush=True)

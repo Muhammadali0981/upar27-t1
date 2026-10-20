@@ -23,7 +23,7 @@ from metrics import format_row, protocol_metrics  # noqa: E402
 
 
 def read_val():
-    path = os.path.join(ROOT, "starter_kit", "data", "annotations", "task1", "val", "gt.csv")
+    path = os.path.join(ROOT, "data", "raw", "annotations", "task1", "val", "gt.csv")
     with open(path, encoding="utf-8") as fh:
         names = [h.strip() for h in fh.readline().lstrip("#").strip().split(",")][1:]
         rows = [r for r in csv.reader(fh)]
@@ -41,7 +41,7 @@ def build_input(n, out, seed=0):
     for k, i in enumerate(idx):
         # anonymised flat names: nothing about the source dataset leaks into the path
         dst = f"images/{k:06d}{os.path.splitext(paths[i])[1]}"
-        shutil.copy(os.path.join(ROOT, "starter_kit", "data", paths[i]), os.path.join(out, dst))
+        shutil.copy(os.path.join(ROOT, "data", "raw", paths[i]), os.path.join(out, dst))
         rows.append(dst)
     with open(os.path.join(out, "images.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
@@ -58,7 +58,7 @@ def main():
     ap.add_argument("--package", default=os.path.join(ROOT, "submission"))
     ap.add_argument("--n", type=int, default=2000)
     ap.add_argument("--target", type=int, default=30000)
-    ap.add_argument("--input", default=os.path.join(ROOT, "cache", "sim_input"))
+    ap.add_argument("--input", default=os.path.join(ROOT, "data", "sim_input"))
     ap.add_argument("--max-seconds", type=float, default=150)
     a = ap.parse_args()
 
