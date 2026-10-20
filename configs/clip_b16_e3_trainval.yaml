@@ -1,5 +1,0 @@
-# Final model: same recipe as clip_b16_e3 on train+val (no validation possible).
-# Export with --ckpt last_ema.pt --calib ../clip_b16_e3/calib.json
-name: clip_b16_e3_trainval
-base: clip_b16_e3.yaml
-train_splits: [train, val]

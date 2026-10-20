@@ -206,7 +206,10 @@ def main():
     step = 0
     t_start = time.time()
     # one bar over every training batch of the run: its ETA is the remaining training time (val passes excluded)
-    bar = tqdm(total=len(train_dl) * cfg["epochs"], desc=cfg["name"], unit="it", dynamic_ncols=True,
+    n_bar = len(train_dl) * cfg["epochs"]
+    if cfg["max_steps"]:
+        n_bar = min(n_bar, cfg["max_steps"] * cfg["accum"])
+    bar = tqdm(total=n_bar, desc=cfg["name"], unit="it", dynamic_ncols=True,
                mininterval=BAR_INTERVAL, smoothing=0.05)
     log = bar.write
     for epoch in range(cfg["epochs"]):

@@ -1,0 +1,8 @@
+# Final model: exactly the sub03 recipe (6-epoch cosine schedule, stopped after epoch 3) on train+val.
+# 131076 images / 64 = 2048 steps per epoch, so 3 epochs = 6144 steps. No validation is possible.
+# Export with --ckpt last_ema.pt --calib ../clip_b16/calib.json --no-flip
+name: clip_b16_trainval
+base: clip_b16.yaml
+train_splits: [train, val]
+max_steps: 6144
+eval_raw: false
