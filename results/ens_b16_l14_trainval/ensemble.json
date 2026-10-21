@@ -1,0 +1,14 @@
+{
+ "members": [
+  {
+   "run": "clip_b16_trainval",
+   "ckpt": "last_ema.pt",
+   "weight": 0.4
+  },
+  {
+   "run": "clip_l14_trainval",
+   "ckpt": "last_ema.pt",
+   "weight": 0.6
+  }
+ ]
+}
