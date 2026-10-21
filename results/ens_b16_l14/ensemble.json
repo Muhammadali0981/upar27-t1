@@ -1,0 +1,14 @@
+{
+ "members": [
+  {
+   "run": "clip_b16",
+   "ckpt": "best.pt",
+   "weight": 0.4
+  },
+  {
+   "run": "clip_l14",
+   "ckpt": "best.pt",
+   "weight": 0.6
+  }
+ ]
+}

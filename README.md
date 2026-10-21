@@ -91,7 +91,7 @@ Ablations (2-epoch CLIP ViT-B/16, full recipe = 0.8709 held-out):
 |---|---|---|---|
 | `sub01_smoke_convnext.zip` | ConvNeXt after 10% of an epoch (pipeline test) | ~0.766 | not uploaded |
 | `sub02_convnext_t_calib.zip` | Model A + N4 + N5 + flip-TTA | 0.8569 | not uploaded |
-| `sub03_clip_b16_calib.zip` | Model B + N4 (λ=1) + N5 | 0.8742 | uploaded 2026-10-20, pending |
+| `sub03_clip_b16_calib.zip` | Model B + N4 (λ=1) + N5 | 0.8742 | **0.7699** (mA 0.7725, Inst_F1 0.7672) |
 | `sub04_clip_b16_lam05.zip` | Model B + N4 shrunk to λ=0.5 + N5 | ~0.867 | not uploaded |
 | `sub05_clip_b16_trainval.zip` | Model B recipe trained on train+val, sub03's offsets | n/a (val seen) | not uploaded |
 

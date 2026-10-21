@@ -182,6 +182,8 @@ def main():
         model = model.to(memory_format=torch.channels_last)
     if cfg["grad_ckpt"] and cfg["model"] == "clip":
         model.visual.set_grad_checkpointing(True)
+    if cfg.get("freeze_blocks") and cfg["model"] == "clip":
+        model.freeze_lower(cfg["freeze_blocks"])
     groups = model.param_groups(cfg["lr"], cfg["head_lr"], cfg["wd"], layer_decay=cfg["layer_decay"])
     for g in groups:
         g["base_lr"] = g["lr"]

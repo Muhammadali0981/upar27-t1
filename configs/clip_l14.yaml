@@ -1,0 +1,15 @@
+# Model C: CLIP ViT-L/14, same recipe as Model B (N1+N2+N3), sized for an 8 GB GPU.
+# The ViT sees 224x112 (16x8 patches); data and run.py stay at 256x128 (resized inside the model).
+# Lower 12 of 24 blocks frozen + gradient checkpointing: ~4.6 GB peak, ~104 img/s.
+# 6-epoch cosine schedule stopped after 4 epochs (Model B peaked at epoch 3); best epoch kept by val.
+name: clip_l14
+base: clip_b16.yaml
+arch: ViT-L-14
+res: [224, 112]
+grad_ckpt: true
+freeze_blocks: 12
+lr: 2.0e-5
+layer_decay: 0.8
+max_steps: 6104
+eval_raw: false
+text_init: results/zeroshot_ViT-L-14/text_weights.npz

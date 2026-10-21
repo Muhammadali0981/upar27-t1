@@ -4,7 +4,10 @@ For each attribute k: w_k = mean normalised text embedding of its positive promp
 (variant "pos") or normalised (pos - neg) (variant "diff"). Score cos(f, w_k).
 Bias b_k is set from TRAIN data only: the threshold at which the fraction of predicted
 positives on a train subset equals the (domain-balanced) train positive rate r_k.
-The better variant (val Challenge_Avg) is saved as results/zeroshot/text_weights.npz.
+The better variant (val Challenge_Avg) is saved as results/zeroshot/text_weights.npz
+(results/zeroshot_<arch>/ for other architectures).
+
+Usage: python src/zero_shot.py [--arch ViT-L-14 --res 224 112]
 """
 from __future__ import annotations
 
@@ -43,16 +46,22 @@ def image_features(visual, norm, ds, bs=256):
     return torch.cat(feats)
 
 
-def main(h=256, w=128, n_train=8000, scale=1 / 0.07):
+def main(arch="ViT-B-16", res=None, h=256, w=128, n_train=8000, scale=1 / 0.07):
     import open_clip
-    out_dir = os.path.join(ROOT, "results", "zeroshot")
+    out_dir = os.path.join(ROOT, "results", "zeroshot" if arch == "ViT-B-16" else f"zeroshot_{arch}")
     os.makedirs(out_dir, exist_ok=True)
-    model = open_clip.create_model("ViT-B-16", pretrained="openai", force_quick_gelu=True).cuda().eval()
-    tok = open_clip.get_tokenizer("ViT-B-16")
+    model = open_clip.create_model(arch, pretrained="openai", force_quick_gelu=True).cuda().eval()
+    tok = open_clip.get_tokenizer(arch)
     tpos, tneg = text_embeddings(model, tok, POS), text_embeddings(model, tok, NEG)
-    resize_clip_pos_embed(model.visual, h, w)
+    vit_res = tuple(res) if res else (h, w)
+    resize_clip_pos_embed(model.visual, *vit_res)
     model.visual.cuda()
-    norm = Normalize(CLIP_MEAN, CLIP_STD).cuda()
+    mean_std = Normalize(CLIP_MEAN, CLIP_STD).cuda()
+
+    def norm(x):  # same input path as CLIPPAR.features
+        if tuple(x.shape[-2:]) != vit_res:
+            x = F.interpolate(x, size=vit_res, mode="bilinear", align_corners=False, antialias=True)
+        return mean_std(x)
 
     tr = CachedPAR(["train"], h, w)
     r = effective_pos_rate(tr.labels, tr.source_idx, balanced=True)
@@ -85,4 +94,9 @@ def main(h=256, w=128, n_train=8000, scale=1 / 0.07):
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--arch", default="ViT-B-16")
+    ap.add_argument("--res", type=int, nargs=2, default=None, help="h w the ViT sees")
+    a = ap.parse_args()
+    main(a.arch, a.res)

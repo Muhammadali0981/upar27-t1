@@ -46,8 +46,36 @@ class InferenceModule(nn.Module):
         return p
 
 
+class EnsembleNet(nn.Module):
+    """Weighted average of member logits (members take the same raw-pixel input)."""
+
+    def __init__(self, nets, weights):
+        super().__init__()
+        self.nets = nn.ModuleList(nets)
+        self.weights = [float(w) for w in weights]
+
+    def forward(self, x):
+        z = self.weights[0] * self.nets[0](x).float()
+        for w, n in zip(self.weights[1:], self.nets[1:]):
+            z = z + w * n(x).float()
+        return z
+
+
+def load_net(run, ckpt="best.pt"):
+    """A training run, or an ensemble folder (ensemble.json from tools/make_ensemble.py)."""
+    ens = os.path.join(run, "ensemble.json")
+    if not os.path.exists(ens):
+        return load_run_model(run, ckpt)
+    with open(ens) as fh:
+        members = json.load(fh)["members"]
+    loaded = [load_run_model(os.path.join(ROOT, "results", m["run"]), m["ckpt"]) for m in members]
+    cfgs = [c for _, c in loaded]
+    assert all((c["h"], c["w"]) == (cfgs[0]["h"], cfgs[0]["w"]) for c in cfgs), "members need the same input size"
+    return EnsembleNet([n for n, _ in loaded], [m["weight"] for m in members]).eval(), cfgs[0]
+
+
 def export(run, ckpt="best.pt", calib_file="calib.json", flip=True, out_dir=None, half=True, use_calib=True):
-    net, cfg = load_run_model(run, ckpt)
+    net, cfg = load_net(run, ckpt)
     offsets, groups = [0.0] * 40, []
     cpath = os.path.join(run, calib_file)
     if use_calib and os.path.exists(cpath):

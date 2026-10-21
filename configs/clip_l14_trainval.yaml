@@ -1,0 +1,7 @@
+# Model C recipe on train+val: stop at the same point of the 6-epoch schedule as its best
+# train-only epoch (epoch 3): 131076 / 64 = 2048 steps per epoch, 3 epochs = 6144 steps.
+# Export with --ckpt last_ema.pt; calibration comes from the train-only run/ensemble.
+name: clip_l14_trainval
+base: clip_l14.yaml
+train_splits: [train, val]
+max_steps: 6144

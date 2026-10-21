@@ -97,20 +97,34 @@ class LanguageHead(nn.Module):
 
 class CLIPPAR(nn.Module):
     def __init__(self, num_attr=40, h=256, w=128, arch="ViT-B-16", pretrained="openai",
-                 text_weights=None, head_bias=None, init_scale=1 / 0.07, load_pretrained=True):
+                 text_weights=None, head_bias=None, init_scale=1 / 0.07, load_pretrained=True, res=None):
         super().__init__()
         import open_clip
         # OpenAI CLIP weights were trained with QuickGELU; the plain "ViT-B-16" config uses GELU
         model = open_clip.create_model(arch, pretrained=pretrained if load_pretrained else None,
                                        force_quick_gelu=(pretrained == "openai"))
         self.visual = model.visual
-        resize_clip_pos_embed(self.visual, h, w)
+        # res: (h, w) the ViT actually sees; inputs of another size are resized inside the model
+        # (e.g. 224x112 for patch-14 ViT-L, a 16x8 grid, while data and run.py stay at 256x128)
+        self.res = tuple(res) if res else (h, w)
+        resize_clip_pos_embed(self.visual, *self.res)
         self.norm = Normalize(CLIP_MEAN, CLIP_STD)
         dim = self.visual.output_dim
         self.head = LanguageHead(dim, num_attr, text_weights, head_bias, init_scale)
 
     def features(self, x):
+        if tuple(x.shape[-2:]) != self.res:
+            x = F.interpolate(x, size=self.res, mode="bilinear", align_corners=False, antialias=True)
         return self.visual(self.norm(x))
+
+    def freeze_lower(self, n_blocks):
+        """Freeze the patch/position embeddings and the first n_blocks transformer blocks."""
+        for name, p in self.visual.named_parameters():
+            if name.startswith("transformer.resblocks."):
+                if int(name.split(".")[2]) < n_blocks:
+                    p.requires_grad_(False)
+            elif not name.startswith(("ln_post", "proj")):
+                p.requires_grad_(False)
 
     def forward(self, x):
         return self.head(self.features(x))
@@ -130,6 +144,8 @@ class CLIPPAR(nn.Module):
             groups[key]["params"].append(p)
 
         for name, p in v.named_parameters():
+            if not p.requires_grad:
+                continue
             if name.startswith("transformer.resblocks."):
                 depth = int(name.split(".")[2]) + 1
             elif name.startswith(("ln_post", "proj")) or name == "proj":
@@ -147,5 +163,6 @@ def build_model(cfg, pos_rate=None, text_weights=None, head_bias=None, load_pret
         return ConvNeXtPAR(40, pos_rate, cfg.get("dropout", 0.2), pretrained=load_pretrained)
     if cfg["model"] == "clip":
         return CLIPPAR(40, cfg["h"], cfg["w"], cfg.get("arch", "ViT-B-16"), cfg.get("pretrained", "openai"),
-                       text_weights, head_bias, cfg.get("init_scale", 1 / 0.07), load_pretrained=load_pretrained)
+                       text_weights, head_bias, cfg.get("init_scale", 1 / 0.07), load_pretrained=load_pretrained,
+                       res=cfg.get("res"))
     raise ValueError(cfg["model"])
