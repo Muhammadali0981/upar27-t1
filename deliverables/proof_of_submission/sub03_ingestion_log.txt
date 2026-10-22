@@ -1,0 +1,29 @@
+----------------------------------------------
+Ingestion Program started!
+----------------------------------------------
+
+[ingestion] task 'par': 29248 image(s), 40 attribute(s)
+[ingestion] entry point: run.predict_batch()
+[ingestion] calling run.load_model()
+[ingestion]   2560/29248 images, 3.0s elapsed
+[ingestion]   5120/29248 images, 6.1s elapsed
+[ingestion]   7680/29248 images, 9.1s elapsed
+[ingestion]   10240/29248 images, 12.2s elapsed
+[ingestion]   12800/29248 images, 15.5s elapsed
+[ingestion]   15360/29248 images, 18.4s elapsed
+[ingestion]   17920/29248 images, 21.5s elapsed
+[ingestion]   20480/29248 images, 24.5s elapsed
+[ingestion]   23040/29248 images, 27.5s elapsed
+[ingestion]   25600/29248 images, 30.5s elapsed
+[ingestion]   28160/29248 images, 33.4s elapsed
+[ingestion]   29248/29248 images, 34.8s elapsed
+[ingestion] produced 29248 prediction row(s) in 34.8s
+[ingestion] wrote /app/output/predictions.csv
+
+------------------------------------
+[OK] Total duration: 45.25s
+------------------------------------
+
+----------------------------------------------
+[OK] Ingestion Program executed successfully!
+----------------------------------------------

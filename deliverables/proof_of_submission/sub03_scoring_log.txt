@@ -1,0 +1,15 @@
+----------------------------------------------
+Scoring Program started!
+----------------------------------------------
+
+[score] task=par gt=gt.csv images=29248 attributes=40
+[score] loaded predictions.csv: 29248 rows x 40 attributes
+[score] scores: {"mA": 0.772535, "mA_std": 0.053952, "Label_F1": 0.55956, "Label_F1_std": 0.109995, "Instance_Acc": 0.651164, "Instance_Acc_std": 0.080832, "Instance_Prec": 0.741894, "Instance_Prec_std": 0.060718, "Instance_Rec": 0.808411, "Instance_Rec_std": 0.059918, "Instance_F1": 0.767218, "Instance_F1_std": 0.060446, "Challenge_Avg": 0.769868}
+
+---------------------------------
+[OK] Total duration: 0.9s
+---------------------------------
+
+----------------------------------------------
+[OK] Scoring Program executed successfully!
+----------------------------------------------

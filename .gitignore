@@ -18,3 +18,10 @@ upload/
 # logs
 logs/
 *.log
+
+# LaTeX build files
+deliverables/report/*.aux
+deliverables/report/*.log
+deliverables/report/*.out
+deliverables/report/page-*.png
+deliverables/presentation/node_modules/

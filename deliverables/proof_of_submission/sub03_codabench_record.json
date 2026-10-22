@@ -1,0 +1,18 @@
+{
+ "id": 1004948,
+ "phase": 30660,
+ "owner": "ali123",
+ "filename": "sub03_clip_b16_calib.zip",
+ "created_when": "2026-10-20T09:31:05.944904Z",
+ "status": "Finished",
+ "status_details": "scoring_hostname-aa65f1905b93",
+ "scores": [
+  {"column_key": "Challenge_Avg", "score": "0.7698680000", "is_primary": true},
+  {"column_key": "mA", "score": "0.7725350000"},
+  {"column_key": "Label_F1", "score": "0.5595600000"},
+  {"column_key": "Instance_Acc", "score": "0.6511640000"},
+  {"column_key": "Instance_Prec", "score": "0.7418940000"},
+  {"column_key": "Instance_Rec", "score": "0.8084110000"},
+  {"column_key": "Instance_F1", "score": "0.7672180000"}
+ ]
+}

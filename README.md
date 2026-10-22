@@ -3,6 +3,9 @@
 Code for our entry to Track 1 (Pedestrian Attribute Recognition) of the UPAR Challenge
 @ WACV 2027 RWS workshop (Codabench 18180). Trained only on the organizers' train (and val) data.
 
+**Course deliverables** (description, LaTeX report and PDF, proof of submission, presentation) are in
+[`deliverables/`](deliverables/README.md).
+
 ## Project layout
 
 | Folder | What is in it | In git? |
